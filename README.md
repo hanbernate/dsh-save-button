@@ -114,7 +114,12 @@ conversation.chat.turnTail（chain slot）
 | `ctx.connection.fetch.register` 精确路由 | `@deepseek-ai/dsh-client-connection` |
 | `ctx.sessionQuery.readEvent`、`ctx.workspaceFiles.stat`、`ctx.fs.readByteRange` | Host 服务 |
 
-已验证：DSH `0.1.5-rc.2`（web profile，`dshmarket` 作为前置插件共存）。
+已验证（DSH `0.1.5-rc.2`，web profile，与 `dshmarket` 共存）：
+
+- `npm test` 51 项断言全绿（Host 路由端到端、select 规则、渲染出的按钮与下载手势、清单守卫）。
+- `dsh plugin --profile web add` 安装成功，依赖为 `link:`（改动即生效）。
+- `dsh --profile web --dump-config` 组合通过，末尾出现 `# == dsh-present-download` 条目——即 profile 不会因本插件启动失败。
+- 浏览器内的实际点击需刷新页面确认（Host 半区随 Loader 组合生效，浏览器半区是页面加载的 bundle）。
 
 行为差异（与官方卡片相比，这是 chain 遮蔽的必然代价，已尽量对齐）：
 
@@ -124,12 +129,13 @@ conversation.chat.turnTail（chain slot）
 ## 开发
 
 ```
-package.json          清单：dsh.bundle.patch / dsh.client / exports
-cordis.patch.yml      profile 层：插入名为 dsh-present-download 的 loader entry
-lib/index.js          Host 半区：注册 /api/present.download
-lib/download.js       Host 纯函数：查询校验、响应头、失败分类、分块字节流
-lib/client.js         浏览器半区：__ModuleLoader__ bundle（手写，无构建）
+package.json            清单：dsh.bundle.patch / dsh.client / exports
+cordis.patch.yml        profile 层：插入名为 dsh-present-download 的 loader entry
+lib/index.js            Host 半区：注册 /api/present.download
+lib/download.js         Host 纯函数：查询校验、响应头、失败分类、分块字节流
+lib/client.js           浏览器半区：__ModuleLoader__ bundle（手写，无构建）
 test/download.test.mjs  Host 纯函数与流行为
+test/host.test.mjs      Host 路由端到端（伪 Cordis 上下文，含「不接受 path」断言）
 test/client.test.mjs    bundle envelope、select 规则、渲染出的按钮与下载手势
 test/package.test.mjs   清单/补丁/模块请求守卫
 ```
