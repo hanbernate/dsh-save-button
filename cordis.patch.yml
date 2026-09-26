@@ -1,0 +1,8 @@
+# dsh-present-download — profile patch layer.
+#
+# One loader entry: the host half registers the authenticated
+# `/api/present.download` route, and the package's `dsh.client` declaration
+# makes the browser half load as `dsh-present-download/client`.
+- insert:
+    - id: present-download
+      name: 'dsh-present-download'
