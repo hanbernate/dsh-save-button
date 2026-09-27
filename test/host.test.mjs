@@ -73,7 +73,7 @@ function call(route, query, method = 'GET') {
 
 describe('plugin identity', () => {
   it('names itself and declares the services it reads', () => {
-    assert.equal(name, 'present-download')
+    assert.equal(name, 'download-button')
     assert.deepEqual(inject, ['connection', 'sessionQuery', 'workspaceFiles', 'fs', 'sandboxPolicy'])
   })
 })
@@ -81,7 +81,7 @@ describe('plugin identity', () => {
 describe('route registration', () => {
   it('owns one exact authenticated route with GET and HEAD', () => {
     const { route } = hostContext()
-    assert.equal(route.path, '/api/present.download')
+    assert.equal(route.path, '/api/download.button')
     assert.deepEqual(route.methods, ['GET', 'HEAD'])
     assert.equal(route.requestBody, 'buffered')
     assert.equal(typeof route.fetch, 'function')

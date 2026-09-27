@@ -1,165 +1,143 @@
-# dsh-present-download
+# dsh-download-button
 
-在 DSH Web GUI 的**交付卡片**上，给「打开」按钮右边加一个「下载」按钮：模型用 `present` 交付的文件（打包好的 zip、报告、数据集、图片……）直接通过浏览器下载到本机，不用再开 SFTP/SCP 拉文件。
+English | [中文](README.zh.md)
+
+Adds a **Download** button next to **Open** on DSH Web GUI **delivery cards**: files the model delivered with
+`present` (a zipped build, a report, a dataset, images…) go straight to your machine through the browser —
+no SFTP/SCP detour.
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
 │  📄  HexHowitzer-windows-x86_64.zip                    ┌────────┐ │
-│      在侧边栏预览                                       │ 打开 ▾ │ │  ← 官方卡片
+│      Preview in sidebar                                │ Open ▾ │ │  ← official card
 │                                                        └────────┘ │
 └──────────────────────────────────────────────────────────────────┘
 ┌──────────────────────────────────────────────────────────────────┐
 │  📄  HexHowitzer-windows-x86_64.zip           ┌────────┐ ┌──────┐ │
-│      在侧边栏预览                              │ 打开 ▾ │ │ ⬇ 下载│ │  ← 装上本插件
-│                                               └────────┘ └──────┘ │
+│      Preview in sidebar                        │ Open ▾ │ │ ⬇ Download │  ← with this plugin
+│                                                └────────┘ └──────┘ │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
-远程/容器里跑 DSH（云主机、GPU 机器、WSL、内网服务器）时最有用：文件在 Host 上，浏览器在你手上，中间只差一个按钮。
+Most useful when DSH runs remotely or inside a container (cloud host, GPU box, WSL, intranet server): the file
+lives on the Host, the browser is in your hands, and the only thing missing is a button.
 
-## 功能
+## Features
 
-- **交付卡片一键下载**：`present` 声明的每个文件右边都有「下载」按钮，走 `Content-Disposition: attachment`，由浏览器自己的下载管理器流式落盘——几十上百 MB 的 zip 不会先塞进页面内存。
-- **官方卡片能力保留**：点卡片/「打开」在侧边栏预览；右侧 `▾` 仍是官方的「用默认应用打开」「打开所在文件夹 / 在 Finder 中显示 / 在文件资源管理器中显示」，主机没有桌面时按官方语义禁用并提示。
-- **状态就地反馈**：正在准备下载… / 已开始下载 / 下载失败，点击重试；打开、打开所在文件夹同样有状态与失败重试。
-- **本轮文件改动 chips 保留**：同一个回合里既改了文件又交付了产物时，改动清单照旧显示（最多 6 个 + `+ N 个文件`）。
-- **交付文件多于 4 个时保留官方折叠行为**（`全部 N 个文件` / `收起`）。
-- **零依赖、零构建**：纯 ESM + 手写浏览器 bundle，装完即用；没有 `postinstall`、没有编译步骤。
-- **中英双语**：跟随 GUI 语言。
+- **One-click download from the delivery card**: every file declared by `present` gets a **Download** button.
+  It responds with `Content-Disposition: attachment`, so the browser's own download manager streams it to disk —
+  a 100 MB zip never has to fit in page memory.
+- **Official card abilities preserved**: clicking the card or **Open** previews the file in the sidebar; the
+  `▾` menu still offers the official **Open in default app** and **Open containing folder** / **Show in Finder** /
+  **Show in File Explorer**, disabled with an explanation when the Host has no desktop.
+- **In-place status feedback**: Preparing download… / Download started / Download failed. Click to retry.
+  Open and reveal report their own status the same way.
+- **No interference with official rendering**: the "Files changed" chips and the multi-file collapse
+  (`All N files` / `Collapse`) keep working, and a Turn without a delivery is left entirely to the official
+  renderer.
+- **Zero dependencies, zero build**: a plain ESM host half plus a hand-written browser bundle — no `postinstall`,
+  no compile step.
+- **Bilingual UI**: follows the GUI language (English / 中文).
+- **Works on both DSH `0.1.5-rc.*` and `0.1.7-rc.*`**: see [Supported DSH versions](#supported-dsh-versions).
 
-## 安装
+## Install
 
-在本目录下不需要 `npm install`（没有依赖）。把项目链接进 web profile：
-
-```sh
-dsh plugin --profile web add /home/liumenghan/dsh-present-download
-```
-
-`dsh` 不在 PATH 上时，用你启动 Web GUI 的那份 CLI，例如：
-
-```sh
-node /home/liumenghan/.dsh/profiles/node_modules/@deepseek-ai/dsh/lib/bin.js \
-  plugin --profile web add /home/liumenghan/dsh-present-download
-```
-
-这条命令做三件事：把包链接进 `~/.dsh/profiles/web/node_modules`、把 `dsh-present-download` 追加到 profile 的 `dsh.profile.bundles`、由 Loader 插入本包 `cordis.patch.yml` 里的那条 entry。
-
-生效方式：
-
-- 装完 **刷新浏览器页面**（浏览器半区是构建产物，页面刷新才会重新拉取 bundle）。
-- 若页面刷新后没出现按钮，重启 Web GUI：`dsh web`（或你平时的启动命令）。
-
-验证：随便让它 `present` 一个文件（例如先 `ls` 出你打包好的 zip），卡片右侧就会出现「下载」。
-
-## 卸载
+Install from npm into your web profile:
 
 ```sh
-dsh plugin --profile web remove dsh-present-download
+dsh plugin --profile web add dsh-download-button
 ```
 
-然后刷新页面。插件被移除后，官方交付卡片原样恢复——本插件不修改任何官方文件。
+A git checkout works too — the package has no build step, so `lib/` ships as-is:
 
-## 工作原理
-
-```
-浏览器（本插件 client.js）                        Host（本插件 index.js）
-─────────────────────────────────────────       ───────────────────────────────────────────
-conversation.chat.turnTail（chain slot）
-  priority: -1  ← 先于官方 entry 参与选举
-  select(owner):
-    owner.turn.data.get('deliverables')
-      有 presented  → 认领这一轮，自己渲染卡片
-      无 presented  → 返回 null，官方 entry 照旧渲染
-                                                 GET/HEAD /api/present.download
-点击「下载」 ───────────────────────────────────▶   ?sessionId=…&seq=…&index=…
-  1. fetch(HEAD) 探测可下载性                      ├─ sessionQuery.readEvent 取 durable 事件
-  2. <a download> 交给浏览器下载管理器             ├─ deliverables/presented → 声明里的 path
-                                                   ├─ workspaceFiles.stat → Session 文件系统
-                                                   ├─ fs.stat 必须是普通文件
-                                                   └─ fs.readByteRange 分块流式响应
-                                                      Content-Disposition: attachment
+```sh
+dsh plugin --profile web add github:hanbernate/dsh-download-button
 ```
 
-### 为什么用 chain 的优先级遮蔽
+For local development, link this checkout instead so edits take effect through Loader recomposition:
 
-`conversation.chat.turnTail` 是 **chain** 类型的 slot：每个贡献者提供 `select`，第一个返回非 null 的胜出，平手按 `priority` 升序。本插件 `priority: -1`，并且**只在当前回合确实有 `present` 交付时才认领**：
+```sh
+dsh plugin --profile web add /path/to/dsh-download-button
+```
 
-- 有 `present` 的回合：由本插件渲染卡片（含「下载」），因此也必须一并渲染「本轮文件改动」chips——chain 只会渲染一个贡献。
-- 没有 `present` 的回合（只改文件、没交付）：本插件返回 `null`，**官方那一行完全不受影响**。
-- 官方的 `ui-deliverables` 插件被移除/禁用时，本插件的 `select` 读不到数据 → 返回 `null` → 什么也不渲染，不会报错。
+If `dsh` is not on your `PATH`, use the CLI you started the Web GUI with, for example:
 
-不依赖 `@deepseek-ai/dsh-client-ui-deliverables` 的任何导出：声明数据从 `owner.turn.data` 的 `deliverables` 投影里按官方同样的规则（`seq < 收尾 seq`、同路径取最后一次声明、首见顺序）重新推导。
+```sh
+node ~/.dsh/profiles/node_modules/@deepseek-ai/dsh/lib/bin.js \
+  plugin --profile web add dsh-download-button
+```
 
-## 安全边界
+This appends `dsh-download-button` to the profile's `dsh.profile.bundles` and lets the Loader insert the entry
+declared in this package's `cordis.patch.yml`. A `link:` install keeps the Host half live through Loader
+recomposition; an npm or git install serves the published code.
 
-这一点值得单独说清楚，因为「从 Web 下载服务器文件」很容易写成一个任意文件读取漏洞（社区里就有把 `?path=` 直接交给 `createReadStream` 的插件）。
+To take effect:
 
-本插件的下载**没有 path 参数**，只能用和官方 `/api/present.open` 完全相同的三元组寻址：
+- **Reload the browser page** after installing (the browser half is a bundle loaded with the page, so a reload is
+  what fetches it again).
+- If the button still does not appear after a reload, restart the Web GUI: `dsh web` (or however you start it).
 
-1. `(sessionId, seq, index)` → `sessionQuery.readEvent` 读 durable 的 `deliverables/presented` 事件；
-2. 取出该事件里 `files[index]` 的声明路径；索引不到就 404；
-3. 路径交给 `workspaceFiles.stat({sessionId, workspaceRoot})` 解析——也就是**侧边栏预览用的那套 Session 文件系统**，越界/不存在/不是普通文件都会失败；
-4. 再用 `fs.resolve` + `fs.stat` 复核目标，最后用 `fs.readByteRange` 分块读取。
+To verify: have the agent `present` any file (for instance `ls` a zip you just built) and a **Download** button
+shows up on the right of the card.
 
-也就是说，**只有 Session 自己用 `present` 声明过的文件能被下载**，不能指向任意主机文件。此外路由注册在 Connection 的共享 `/api` 通道上，自动继承与其它 Host 路由相同的 trust fence 与浏览器 Cookie 认证；`/api/present.open`（原生打开）的判定仍由官方代码负责，本插件只是调用方。
+## Usage
 
-## 兼容性
+The button sits to the right of the official **Open** button, one per delivered file:
 
-| 依赖的官方契约 | 出处 |
+| Action | Behavior |
 |---|---|
-| `conversation.chat.turnTail` chain slot（`select` + `priority`） | `@deepseek-ai/dsh-client-ui-chat` |
-| Turn 数据投影 `deliverables`（`produced` / `presented`） | `@deepseek-ai/dsh-client-ui-deliverables` |
-| `deliverables/presented` durable 事件 | `@deepseek-ai/dsh-tool-present` |
-| `/api/present.open`、`/api/present.host` | `@deepseek-ai/dsh-client-ui-deliverables`（host half） |
-| `ctx.connection.fetch.register` 精确路由 | `@deepseek-ai/dsh-client-connection` |
-| `ctx.sessionQuery.readEvent`、`ctx.workspaceFiles.stat`、`ctx.fs.readByteRange` | Host 服务 |
+| **Download** | first sends `HEAD /api/download.button?sessionId=…&seq=…&index=…` to probe availability, then hands the file to the browser's download manager with `<a download>`; the file name comes from the Host's `Content-Disposition` |
+| **Open** | same as official: previews the file in the sidebar |
+| **▾ menu** | official actions: open in default app / open containing folder (Finder / File Explorer); disabled when the Host has no desktop |
+| **On failure** | the reason is shown in place (e.g. "file is no longer in this session") and the same button retries |
+| **More than 4 files** | the official collapse is preserved: `All N files` / `Collapse` |
 
-已验证（DSH `0.1.5-rc.2`，web profile，与 `dshmarket` 共存）：
+Downloads are addressed **only** by the `(sessionId, seq, index)` triple — there is no `path` parameter — so the
+only files that can be downloaded are the ones this session declared with `present`. Resolution, containment and
+type checks, and chunked reads all happen in the Host half. See
+[doc/architecture.md](doc/architecture.md) (Chinese).
 
-- `npm test` 51 项断言全绿（Host 路由端到端、select 规则、渲染出的按钮与下载手势、清单守卫）。
-- `dsh plugin --profile web add` 安装成功，依赖为 `link:`（改动即生效）。
-- `dsh --profile web --dump-config` 组合通过，末尾出现 `# == dsh-present-download` 条目——即 profile 不会因本插件启动失败。
-- 浏览器内的实际点击需刷新页面确认（Host 半区随 Loader 组合生效，浏览器半区是页面加载的 bundle）。
+## Supported DSH versions
 
-行为差异（与官方卡片相比，这是 chain 遮蔽的必然代价，已尽量对齐）：
+| DSH RC | `turnTail` contract | Integration | Status |
+|---|---|---|---|
+| 0.1.0-rc.2 … 0.1.2-rc.1 | — (no `present` / `workspaceFiles`) | not applicable | not supported |
+| 0.1.5-rc.1 / rc.2 / rc.3 | chain | claims the whole turn row with `priority: -1` and draws the card itself | supported (rc.3 verified 11/11) |
+| 0.1.7-rc.1 / rc.2 | list | official card untouched; injects a Download button into `deliverables.file.actions` | supported (rc.2 verified 12/12) |
 
-- 卡片视觉与交互按官方样式重写（同样的 60px 卡片、40px 图标框、28px 分段控件、`--dsw-*` 语义色，深色主题跟随），但不是同一份 CSS，像素级细节可能有细微差异。
-- 「本轮文件改动」chips 固定最多 6 个 + `+ N 个文件`，未实现官方的容器查询分档（窄宽度下官方会逐档减少 chips）。
+> At init time the plugin picks its adapter from what the runtime **actually declares** — a client plugin cannot
+> read the DSH version — so one installation works on both lines. The contract list, test layers, itemized
+> verification records and the tag-switching handbook are in [doc/compatibility.md](doc/compatibility.md) (Chinese).
 
-## 开发
-
-```
-package.json            清单：dsh.bundle.patch / dsh.client / exports
-cordis.patch.yml        profile 层：插入名为 dsh-present-download 的 loader entry
-lib/index.js            Host 半区：注册 /api/present.download
-lib/download.js         Host 纯函数：查询校验、响应头、失败分类、分块字节流
-lib/client.js           浏览器半区：__ModuleLoader__ bundle（手写，无构建）
-test/download.test.mjs  Host 纯函数与流行为
-test/host.test.mjs      Host 路由端到端（伪 Cordis 上下文，含「不接受 path」断言）
-test/client.test.mjs    bundle envelope、select 规则、渲染出的按钮与下载手势
-test/package.test.mjs   清单/补丁/模块请求守卫
-```
-
-跑测试：
+## Uninstall
 
 ```sh
-npm test        # node --test（Node ≥ 22，无第三方依赖）
+dsh plugin --profile web remove dsh-download-button
 ```
 
-改完 `lib/` 下的文件后：Host 半区随 Loader 热重组合生效；`lib/client.js` 是页面加载的 bundle，需要**刷新页面**（开发 Web GUI 时 `pnpm run dev:web` 会重编官方 bundle，但本包不参与该构建，仍以刷新为准）。
+Then reload the page. Once the plugin is gone the official delivery card is back exactly as before — this plugin
+never modifies any official file.
 
-浏览器半区是手写的 `window.__ModuleLoader__.load({ id, factory })` 包封（与官方 bundle 同格式），只 `require` 客户端基线模块：`react` 与 `@deepseek-ai/dsh-client-ui-primitives`。**不要**在这里 import 官方 deliverables 包——那样会和官方实现耦合，测试里有守卫。
+## Troubleshooting
 
-## 故障排查
-
-| 现象 | 处理 |
+| Symptom | What to do |
 |---|---|
-| 卡片右侧没有「下载」 | 先刷新页面；再确认 `~/.dsh/profiles/web/package.json` 的 `dsh.profile.bundles` 里有 `dsh-present-download`；仍无效则重启 `dsh web` |
-| 按钮出现，点了提示「下载失败，点击重试」 | 打开浏览器开发者工具看 `/api/present.download?...` 的响应：401/403 = 认证，404 = 该声明不在 Session 里（换了会话或事件被裁剪），422 = 不是常规文件/在工作区之外 |
-| 点「打开」报「打开失败」 | Host 无桌面（纯服务器）时的正常结果；用「下载」或侧边栏预览 |
-| 报 `exports["./client"] must be a string` | `package.json` 的 `exports` 被改坏了，跑 `npm test` 看守卫 |
-| 改了 `lib/client.js` 没生效 | 刷新页面（bundle 由 Host 按 revision 提供，页面不刷新不会重拉） |
+| No **Download** button on the card | reload the page first; then check that `dsh-download-button` is listed in `dsh.profile.bundles` in `~/.dsh/profiles/web/package.json`; if it still does not show up, restart `dsh web` |
+| Button appears, click reports "Download failed. Click to retry." | open the browser devtools and look at the `/api/download.button?...` response: 401/403 = authentication, 404 = that declaration is not in the Session (different session, or the event was pruned), 422 = not a regular file / outside the workspace |
+| **Open** reports "Open failed" | expected when the Host has no desktop (a headless server); use **Download** or the sidebar preview instead |
+| `exports["./client"] must be a string` | the `exports` field in `package.json` got broken; run `npm test` for the guard |
+| Edited `lib/client.js` but nothing changed | reload the page (the Host serves the bundle by revision, and it is not refetched until the page reloads) |
+
+## Docs
+
+The detailed docs under `doc/` are currently written in Chinese:
+
+| Document | Contents |
+|---|---|
+| [doc/architecture.md](doc/architecture.md) | how a download works end to end, the two halves, the adapter + capability-probe selector, the icon capability table, security boundary, design decision records |
+| [doc/compatibility.md](doc/compatibility.md) | support matrix, official contract list (C1–C10), history of the two breaking points, test layers and cases, real-machine verification records (V1–V17), tag-switching handbook |
+| [doc/development.md](doc/development.md) | directory layout, running tests, how edits take effect, steps for adding an adapter, pre-release checklist, development pitfalls |
 
 ## License
 
-MIT，见 [LICENSE](LICENSE)。
+MIT, see [LICENSE](LICENSE).
