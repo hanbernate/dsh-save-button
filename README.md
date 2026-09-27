@@ -1,5 +1,7 @@
 # dsh-save-button
 
+[![npm version](https://img.shields.io/npm/v/dsh-save-button.svg)](https://www.npmjs.com/package/dsh-save-button)
+
 English | [中文](README.zh.md)
 
 Adds a **Download** button next to **Open** on DSH Web GUI **delivery cards**: files the model delivered with

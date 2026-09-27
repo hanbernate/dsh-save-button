@@ -1,0 +1,36 @@
+# Publishes dsh-save-button to npm when a v* tag is pushed.
+#
+# Requires the repository secret NPM_TOKEN: a granular access token with
+# "Read and write (publish and stage)" on All packages and "Bypass 2FA"
+# enabled — CI cannot answer an interactive 2FA prompt.
+name: publish
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+  id-token: write # npm provenance attestation
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the tagged commit
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+
+      - name: Test
+        run: npm test
+
+      - name: Publish
+        run: npm publish --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

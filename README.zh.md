@@ -1,5 +1,7 @@
 # dsh-save-button
 
+[![npm version](https://img.shields.io/npm/v/dsh-save-button.svg)](https://www.npmjs.com/package/dsh-save-button)
+
 [English](README.md) | 中文
 
 在 DSH Web GUI 的**交付卡片**上，给「打开」按钮右边加一个「下载」按钮：模型用 `present` 交付的文件（打包好的
