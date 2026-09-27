@@ -51,13 +51,13 @@ dsh plugin --profile web add dsh-save-button
 A git checkout works too — the package has no build step, so `lib/` ships as-is:
 
 ```sh
-dsh plugin --profile web add github:hanbernate/dsh-download-button
+dsh plugin --profile web add github:hanbernate/dsh-save-button
 ```
 
 For local development, link this checkout instead so edits take effect through Loader recomposition:
 
 ```sh
-dsh plugin --profile web add /path/to/dsh-download-button
+dsh plugin --profile web add /path/to/dsh-save-button
 ```
 
 If `dsh` is not on your `PATH`, use the CLI you started the Web GUI with, for example:

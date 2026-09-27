@@ -45,13 +45,13 @@ dsh plugin --profile web add dsh-save-button
 也可以直接装 git 仓库——本包无构建步骤，`lib/` 已提交：
 
 ```sh
-dsh plugin --profile web add github:hanbernate/dsh-download-button
+dsh plugin --profile web add github:hanbernate/dsh-save-button
 ```
 
 本地开发时改为链接本目录，改动后 Host 半区随 Loader 热重组合生效：
 
 ```sh
-dsh plugin --profile web add /path/to/dsh-download-button
+dsh plugin --profile web add /path/to/dsh-save-button
 ```
 
 `dsh` 不在 PATH 上时，用你启动 Web GUI 的那份 CLI，例如：

@@ -1,6 +1,6 @@
 {
   "name": "dsh-save-button",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Download files delivered by `present` straight from the Web GUI delivery card — no SFTP, no extra tools.",
   "keywords": [
     "dsh",
@@ -14,11 +14,11 @@
   "author": "hanbernate",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hanbernate/dsh-download-button.git"
+    "url": "git+https://github.com/hanbernate/dsh-save-button.git"
   },
-  "homepage": "https://github.com/hanbernate/dsh-download-button#readme",
+  "homepage": "https://github.com/hanbernate/dsh-save-button#readme",
   "bugs": {
-    "url": "https://github.com/hanbernate/dsh-download-button/issues"
+    "url": "https://github.com/hanbernate/dsh-save-button/issues"
   },
   "type": "module",
   "engines": {
