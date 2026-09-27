@@ -173,7 +173,7 @@ const IconDownload = primitives.IconDownloadOutline16 ?? primitives.IconDownload
 ### L4 — 安装与加载器（每版本）
 
 - `dsh plugin --profile web-<v> add <本包>` 成功；依赖为 `link:`。
-- `dsh --profile web-<v> --dump-config` 组合成功，末尾出现 `# == dsh-download-button` 条目。
+- `dsh --profile web-<v> --dump-config` 组合成功，末尾出现 `# == dsh-save-button` 条目。
 - 与同类插件共存（如 `dshmarket`）能组合。
 
 ### L5 — 浏览器端到端（每版本，人工或 Playwright）
@@ -241,12 +241,12 @@ node "$DSH_BIN" --profile web --dump-config | tail -5
 
 | # | 验证项 | 手段 | 结果 |
 |---|---|---|---|
-| V1 | 安装与组合 | `DSH_HOME=… pnpm dsh plugin --profile web add <插件>` + `--dump-config` | ✅ 出现 `# == dsh-download-button` / `- id: download-button` |
-| V2 | 真机 GUI 装载 | `pnpm dsh web --no-open --port 3099 --host 127.0.0.1`（隔离 home） | ✅ 启动；`__DSH_BOOT__.entries` 含 `dsh-download-button`（`rev=959b49065e7c`） |
-| V3 | 客户端模块下发 | `GET /plugins/??dsh-download-button/client.js&rev=…`（带登录 cookie） | ✅ 200，34 186 B，含 `deliverables.file.actions` |
+| V1 | 安装与组合 | `DSH_HOME=… pnpm dsh plugin --profile web add <插件>` + `--dump-config` | ✅ 出现 `# == dsh-save-button` / `- id: download-button` |
+| V2 | 真机 GUI 装载 | `pnpm dsh web --no-open --port 3099 --host 127.0.0.1`（隔离 home） | ✅ 启动；`__DSH_BOOT__.entries` 含 `dsh-save-button`（`rev=959b49065e7c`） |
+| V3 | 客户端模块下发 | `GET /plugins/??dsh-save-button/client.js&rev=…`（带登录 cookie） | ✅ 200，34 186 B，含 `deliverables.file.actions` |
 | V4 | Host 路由（真机） | `HEAD/GET /api/download.button…` | ✅ 无坐标 400；`sessionId=x&seq=1&index=0` 404（未知会话）；`/api/nonexistent` 404 对照 |
 | V5 | Host 路由（真服务规格） | `.script/verify/plugin-route.host.spec.ts`：真 `LocalFileSystem`+`WorkspaceFiles`+`HostConnectionService` | ✅ 5/5：GET/HEAD 头部与字节、`path=` 被忽略、400/404/422 拒绝 |
-| V6 | 客户端注册（真 registry） | `.script/verify/plugin-client.client.spec.tsx`：`SlotTestRuntime` + 真 `SlotRegistry`/renderer/primitives | ✅ 只落 `deliverables.file.actions`（`options.id='dsh-download-button'`、`locale='downloadButton'`），`turnTail` 无条目；dispose 后移除 |
+| V6 | 客户端注册（真 registry） | `.script/verify/plugin-client.client.spec.tsx`：`SlotTestRuntime` + 真 `SlotRegistry`/renderer/primitives | ✅ 只落 `deliverables.file.actions`（`options.id='dsh-save-button'`、`locale='downloadButton'`），`turnTail` 无条目；dispose 后移除 |
 | V7 | 渲染 | 同上：`renderSlot('deliverables.file.actions', {actionUrl, available, pending, onAction})` | 修复前 ❌ `data-slot-error`：`React.createElement: type is invalid … 'ActionDownload'`；**修复后 ✅** 按钮正常渲染、点击走 HEAD + anchor、成功/失败文案就位 |
 | V8 | 图标面 | 真 primitives 导出表 + `lib/client.js` 里读出的实际回退链 | 修复前 ❌ 5 个图标全 `undefined`；**修复后 ✅** 5 条链都解析到 `…OutlineRegular` |
 | V9 | 适配器选择（真声明树） | 同上，`declaredKind(runtime.ctx, …)` + `selectAdapter(runtime.ctx)` | ✅ `deliverables.file.actions → 'list'`、`turnTail → 'list'`，选中 `fileActions017` |

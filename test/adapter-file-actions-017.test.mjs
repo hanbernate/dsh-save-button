@@ -40,7 +40,7 @@ describe('adapter selection on the 0.1.7-rc.* topology', () => {
     assert.equal(registrations.length, 1, 'the official turn tail is never claimed')
     const { options, component } = registrations[0]
     assert.equal(options.name, 'deliverables.file.actions')
-    assert.equal(options.id, 'dsh-download-button')
+    assert.equal(options.id, 'dsh-save-button')
     assert.equal(options.locale, 'downloadButton')
     assert.equal(options.select, undefined, 'a list entry carries no chain select')
     assert.equal(component, client.ActionDownload)

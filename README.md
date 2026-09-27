@@ -1,4 +1,4 @@
-# dsh-download-button
+# dsh-save-button
 
 English | [中文](README.zh.md)
 
@@ -45,7 +45,7 @@ lives on the Host, the browser is in your hands, and the only thing missing is a
 Install from npm into your web profile:
 
 ```sh
-dsh plugin --profile web add dsh-download-button
+dsh plugin --profile web add dsh-save-button
 ```
 
 A git checkout works too — the package has no build step, so `lib/` ships as-is:
@@ -64,10 +64,10 @@ If `dsh` is not on your `PATH`, use the CLI you started the Web GUI with, for ex
 
 ```sh
 node ~/.dsh/profiles/node_modules/@deepseek-ai/dsh/lib/bin.js \
-  plugin --profile web add dsh-download-button
+  plugin --profile web add dsh-save-button
 ```
 
-This appends `dsh-download-button` to the profile's `dsh.profile.bundles` and lets the Loader insert the entry
+This appends `dsh-save-button` to the profile's `dsh.profile.bundles` and lets the Loader insert the entry
 declared in this package's `cordis.patch.yml`. A `link:` install keeps the Host half live through Loader
 recomposition; an npm or git install serves the published code.
 
@@ -112,7 +112,7 @@ type checks, and chunked reads all happen in the Host half. See
 ## Uninstall
 
 ```sh
-dsh plugin --profile web remove dsh-download-button
+dsh plugin --profile web remove dsh-save-button
 ```
 
 Then reload the page. Once the plugin is gone the official delivery card is back exactly as before — this plugin
@@ -122,7 +122,7 @@ never modifies any official file.
 
 | Symptom | What to do |
 |---|---|
-| No **Download** button on the card | reload the page first; then check that `dsh-download-button` is listed in `dsh.profile.bundles` in `~/.dsh/profiles/web/package.json`; if it still does not show up, restart `dsh web` |
+| No **Download** button on the card | reload the page first; then check that `dsh-save-button` is listed in `dsh.profile.bundles` in `~/.dsh/profiles/web/package.json`; if it still does not show up, restart `dsh web` |
 | Button appears, click reports "Download failed. Click to retry." | open the browser devtools and look at the `/api/download.button?...` response: 401/403 = authentication, 404 = that declaration is not in the Session (different session, or the event was pruned), 422 = not a regular file / outside the workspace |
 | **Open** reports "Open failed" | expected when the Host has no desktop (a headless server); use **Download** or the sidebar preview instead |
 | `exports["./client"] must be a string` | the `exports` field in `package.json` got broken; run `npm test` for the guard |

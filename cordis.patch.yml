@@ -1,8 +1,8 @@
-# dsh-download-button — profile patch layer.
+# dsh-save-button — profile patch layer.
 #
 # One loader entry: the host half registers the authenticated
 # `/api/download.button` route, and the package's `dsh.client` declaration
-# makes the browser half load as `dsh-download-button/client`.
+# makes the browser half load as `dsh-save-button/client`.
 - insert:
     - id: download-button
-      name: 'dsh-download-button'
+      name: 'dsh-save-button'

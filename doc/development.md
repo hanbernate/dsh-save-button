@@ -9,7 +9,7 @@
 
 ```
 package.json            清单：dsh.bundle.patch / dsh.client / exports（files 只发 lib + patch + README + LICENSE）
-cordis.patch.yml        profile 层：插入名为 dsh-download-button 的 loader entry
+cordis.patch.yml        profile 层：插入名为 dsh-save-button 的 loader entry
 lib/index.js            Host 半区：注册 /api/download.button
 lib/download.js         Host 纯函数：查询校验、响应头、失败分类、分块字节流
 lib/client.js           浏览器半区：__ModuleLoader__ bundle（手写，无构建，872 行）

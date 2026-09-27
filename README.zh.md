@@ -1,4 +1,4 @@
-# dsh-download-button
+# dsh-save-button
 
 [English](README.md) | 中文
 
@@ -39,7 +39,7 @@ zip、报告、数据集、图片……）直接通过浏览器下载到本机�
 从 npm 装进 web profile：
 
 ```sh
-dsh plugin --profile web add dsh-download-button
+dsh plugin --profile web add dsh-save-button
 ```
 
 也可以直接装 git 仓库——本包无构建步骤，`lib/` 已提交：
@@ -58,10 +58,10 @@ dsh plugin --profile web add /path/to/dsh-download-button
 
 ```sh
 node ~/.dsh/profiles/node_modules/@deepseek-ai/dsh/lib/bin.js \
-  plugin --profile web add dsh-download-button
+  plugin --profile web add dsh-save-button
 ```
 
-这条命令把 `dsh-download-button` 追加到 profile 的 `dsh.profile.bundles`，并由 Loader 插入本包
+这条命令把 `dsh-save-button` 追加到 profile 的 `dsh.profile.bundles`，并由 Loader 插入本包
 `cordis.patch.yml` 里的那条 entry。
 
 生效方式：
@@ -100,7 +100,7 @@ node ~/.dsh/profiles/node_modules/@deepseek-ai/dsh/lib/bin.js \
 ## 卸载
 
 ```sh
-dsh plugin --profile web remove dsh-download-button
+dsh plugin --profile web remove dsh-save-button
 ```
 
 然后刷新页面。插件被移除后，官方交付卡片原样恢复——本插件不修改任何官方文件。
@@ -109,7 +109,7 @@ dsh plugin --profile web remove dsh-download-button
 
 | 现象 | 处理 |
 |---|---|
-| 卡片右侧没有「下载」 | 先刷新页面；再确认 `~/.dsh/profiles/web/package.json` 的 `dsh.profile.bundles` 里有 `dsh-download-button`；仍无效则重启 `dsh web` |
+| 卡片右侧没有「下载」 | 先刷新页面；再确认 `~/.dsh/profiles/web/package.json` 的 `dsh.profile.bundles` 里有 `dsh-save-button`；仍无效则重启 `dsh web` |
 | 按钮出现，点了提示「下载失败，点击重试」 | 打开浏览器开发者工具看 `/api/download.button?...` 的响应：401/403 = 认证，404 = 该声明不在 Session 里（换了会话或事件被裁剪），422 = 不是常规文件/在工作区之外 |
 | 点「打开」报「打开失败」 | Host 无桌面（纯服务器）时的正常结果；用「下载」或侧边栏预览 |
 | 报 `exports["./client"] must be a string` | `package.json` 的 `exports` 被改坏了，跑 `npm test` 看守卫 |

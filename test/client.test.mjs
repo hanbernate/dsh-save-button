@@ -22,7 +22,7 @@ const client = client017
 
 describe('bundle envelope', () => {
   it('registers exactly one module under the package name', () => {
-    assert.equal(bundle.id, 'dsh-download-button')
+    assert.equal(bundle.id, 'dsh-save-button')
     assert.equal(typeof bundle.factory, 'function')
   })
 
@@ -58,7 +58,7 @@ describe('apply on the 0.1.7-rc.* contract', () => {
     // Every adapter watches its own slot, but only the accepting one registers.
     assert.deepEqual(injections, ['deliverables.file.actions', 'conversation.chat.turnTail'])
     assert.deepEqual(registrations.map(entry => entry.options.name), ['deliverables.file.actions'])
-    assert.equal(registrations[0].options.id, 'dsh-download-button')
+    assert.equal(registrations[0].options.id, 'dsh-save-button')
     assert.equal(registrations[0].options.locale, 'downloadButton')
     assert.equal(typeof registrations[0].component, 'function')
   })

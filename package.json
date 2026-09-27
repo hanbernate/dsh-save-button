@@ -1,5 +1,5 @@
 {
-  "name": "dsh-download-button",
+  "name": "dsh-save-button",
   "version": "0.1.1",
   "description": "Download files delivered by `present` straight from the Web GUI delivery card — no SFTP, no extra tools.",
   "keywords": [
