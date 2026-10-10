@@ -34,7 +34,7 @@ zip、报告、数据集、图片……）直接通过浏览器下载到本机�
   插件的回合没有交付产物时，官方那一行完全不受影响。
 - **零依赖、零构建**：纯 ESM + 手写浏览器 bundle，装完即用；没有 `postinstall`、没有编译步骤。
 - **中英双语**：跟随 GUI 语言。
-- **同时兼容 DSH 0.1.5-rc.\* 与 0.1.7-rc.\***：见下方「支持的 DSH 版本」。
+- **同时兼容 DSH 0.1.5-rc.\*、0.1.7-rc.\* 与 0.2.0-rc.\***：见下方「支持的 DSH 版本」。
 
 ## 安装
 
@@ -95,8 +95,9 @@ node ~/.dsh/profiles/node_modules/@deepseek-ai/dsh/lib/bin.js \
 | 0.1.0-rc.2 … 0.1.2-rc.1 | —（无 `present` / `workspaceFiles`） | 不适用 | 不支持 |
 | 0.1.5-rc.1 / rc.2 / rc.3 | chain | 按 `priority: -1` 认领整行并自绘卡片 | 支持（rc.3 实测 11/11） |
 | 0.1.7-rc.1 / rc.2 | list | 官方卡片原样，注入 `deliverables.file.actions` 下载按钮 | 支持（rc.2 实测 12/12） |
+| 0.2.0-rc.1 / rc.2 | list | 同 0.1.7：官方卡片原样，注入 `deliverables.file.actions` 下载按钮 | 支持（rc.2 实测 12/12） |
 
-> 插件在初始化时按运行时**实际声明**选择适配器（客户端拿不到 DSH 版本号），所以同一份安装包在两条线上都工作。
+> 插件在初始化时按运行时**实际声明**选择适配器（客户端拿不到 DSH 版本号），所以同一份安装包在所有这些线上都工作。
 > 契约清单、测试分层、逐项实测记录与换线手册见 [doc/compatibility.md](doc/compatibility.md)。
 
 ## 卸载
@@ -122,7 +123,7 @@ dsh plugin --profile web remove dsh-save-button
 | 文档 | 内容 |
 |---|---|
 | [doc/architecture.md](doc/architecture.md) | 工作原理、两个半区、适配器与能力探测选择器、图标能力表、安全边界、设计决策记录 |
-| [doc/compatibility.md](doc/compatibility.md) | 支持矩阵、官方契约面清单（C1–C10）、两个断点的历史、测试分层与用例、真机实测记录（V1–V17）、换线手册 |
+| [doc/compatibility.md](doc/compatibility.md) | 支持矩阵、官方契约面清单（C1–C10）、两个断点的历史、测试分层与用例、真机实测记录（V1–V23）、换线手册 |
 | [doc/development.md](doc/development.md) | 目录结构、跑测试、改完怎么生效、新增适配器的步骤、发布前检查清单、开发陷阱 |
 
 ## License

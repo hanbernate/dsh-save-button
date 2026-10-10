@@ -15,8 +15,9 @@
 | 0.1.0-rc.2 … 0.1.2-rc.1 | —（无 `present` / `workspaceFiles`） | 不适用 | **不支持**（缺服务/事件） |
 | 0.1.5-rc.1 / rc.2 / rc.3 | chain | `chain015`：`priority: -1` 认领整行，自绘卡片 | **支持**（rc.3 实测 **11/11**） |
 | 0.1.7-rc.1 / rc.2 | list | `fileActions017`：官方卡片原样，注入 `deliverables.file.actions` 下载按钮 | **支持**（rc.2 实测 **12/12**） |
+| 0.2.0-rc.1 / rc.2 | list | `fileActions017`（同 0.1.7）：官方卡片原样，注入 `deliverables.file.actions` 下载按钮 | **支持**（rc.2 实测 **12/12**） |
 
-- 两条线各有专属适配器，且**各自在真机 registry + 生产渲染器上被验证**（第 9 节 V1–V17）。
+- 两条适配器线（0.1.5 的 chain / 0.1.7 起的 list）各有专属适配器，且**各自在真机 registry + 生产渲染器上被验证**（第 9 节 V1–V23）。
 - 下界是 **0.1.5-rc.1**（见第 4 节 RC-03）。
 - 插件**不修改任何官方文件**；未认领的回合官方渲染原样。
 
@@ -26,10 +27,11 @@
 
 | 通道 | 版本 | 说明 |
 |---|---|---|
-| latest | 0.1.5-rc.3 | stable 通道，必须测 |
-| next | 0.1.7-rc.2 | 下一版通道，必须测 |
+| latest | 0.2.0-rc.2 | stable 通道，必须测 |
+| next | 0.2.0-rc.2 | 下一版通道，必须测 |
+| — | 0.2.0-rc.1 | 0.2.0 线入口 |
 | — | 0.1.5-rc.1 / 0.1.5-rc.2 | 功能基线（rc.2 是早期已验版本） |
-| — | 0.1.7-rc.1 | 0.1.7 线入口，用于定位断点 |
+| — | 0.1.7-rc.1 / 0.1.7-rc.2 | 上一版已验线，用于回归对照 |
 | — | 0.1.0-rc.2 / rc.3 / rc.6 / rc.7 / rc.8、0.1.1-rc.1 / rc.2、0.1.2-rc.1 | 下界负例，只测「优雅失败 / 不支持」 |
 
 **关键依赖首发版本（决定下界）**
@@ -49,6 +51,8 @@
 | 0.1.5-rc.3 | ✓ | ✓ | ✓ | ✓ | ✓ | **实测通过 11/11**（第 9.2 节） |
 | 0.1.7-rc.1 | ✓ | ✓ | ✓（同 rc.2 契约） | ✓（修复后） | 未实测 | **应通过**（契约同 rc.2） |
 | 0.1.7-rc.2 | ✓ | ✓ | ✓（实测） | ✓（修复后实测） | ✓（渲染级） | **实测通过 12/12**（第 9.1 节） |
+| 0.2.0-rc.1 | ✓ | ✓ | ✓（同 0.1.7 契约） | ✓ | 未实测 | **应通过**（契约同 0.1.7） |
+| 0.2.0-rc.2 | ✓ | ✓ | ✓（实测） | ✓（生产渲染器实测） | ✓（渲染级） | **实测通过 12/12**（第 9.3 节） |
 
 ## 3. 契约面清单（插件依赖什么）
 
@@ -64,6 +68,10 @@
 | C8 | primitives 导出：`Menu`、`FileTypeIcon`、`LinkIcon`、`classifyLinkPath`、`fileExtension`、5 个图标 | `@deepseek-ai/dsh-client-ui-primitives` | 卡片渲染 | 基础符号稳定；**5 图标改名（RC-02 断点）** |
 | C9 | 清单契约：`dsh.bundle.patch` / `dsh.client.platform` / `exports['./client']` / bundle id | DSH loader + client-modules | 装载入口 | **稳定** |
 | C10 | `dsh plugin --profile <p> add` 与 `dsh --profile <p> --dump-config` | `@deepseek-ai/dsh` CLI / app-boot | 安装与组合 | **稳定** |
+
+> **0.2.0-rc.\* 增量（实测）**：C1–C10 在 0.1.7-rc.2 → 0.2.0-rc.2 之间无破坏性变化——插件相关源码逐字节相同
+> （`ui-chat` 的 `register-node-renderers.ts` / `contract/slots.ts`、`ui-deliverables` 的 `file-actions.ts` / `Deliverables.tsx`、`ui-slots` src），
+> Host 侧 C1–C5 所在包只有版本号变化，C8 五个图标仍解析到 `…OutlineRegular`（与 0.1.7 同名）。
 
 **按线核对过的事实**
 
@@ -116,6 +124,13 @@ const IconDownload = primitives.IconDownloadOutline16 ?? primitives.IconDownload
 插件 `inject` 依赖 `workspaceFiles`，下载数据源依赖 `present`；两者首发于 0.1.5-alpha。更早的 RC 上
 要么缺服务（Cordis 拒绝加载，本插件不影响其它插件），要么永远没有 `present` 事件（无卡片）。
 **首个可工作 RC = 0.1.5-rc.1。**
+
+### 0.2.0：无新断点
+
+0.1.7-rc.2 → 0.2.0-rc.2 之间，插件依赖的 slot 声明与 primitives 图标面均未变化：`turnTail` 仍是 list，
+`deliverables.file.actions` 仍是 list 子槽且 owner 仍带 `actionUrl`，五个图标仍是权重后缀名。因此 0.2.0 直接沿用
+`fileActions017`，不需要第三个适配器。`LinkIcon` 自 0.1.7 起只有 `LinkIconRegular` / `LinkIconMedium` 两个导出，
+但它只出现在永不选中的 `chain015` 路径里，不构成 0.2.0 的问题。
 
 ## 5. 测试分层
 
@@ -271,7 +286,26 @@ node "$DSH_BIN" --profile web --dump-config | tail -5
 
 **0.1.5 结论**：chain 6 + host 5 = **11/11**。
 
-### 9.3 临时脚本位置
+### 9.3 0.2.0-rc.2（tag `dsh-v0.2.0-rc.2` = `639ed01539`，即当前 latest/next）
+
+被测对象：`lib/client.js` / `lib/index.js` 当前实现（与 v0.1.4 逐字节相同；v0.1.5 只含版本号与文档变更）。被测 DSH：主检出
+`/home/liumenghan/deepseek-harness`（0.2.0-rc.2，已构建），动态规格复用 0.1.7 线 spec。
+
+| # | 验证项 | 手段 | 结果 |
+|---|---|---|---|
+| V18 | 契约增量 | `git diff dsh-v0.1.7-rc.2 dsh-v0.2.0-rc.2`：`register-node-renderers.ts` / `contract/slots.ts` / `file-actions.ts` / `Deliverables.tsx` / `ui-slots` src | ✅ 空 diff（逐字节相同）；C1–C5 所在包仅版本号 |
+| V19 | 图标面 | `.script/compat/probe-icons-matrix.mjs dsh-v0.2.0-rc.1 dsh-v0.2.0-rc.2` | ✅ 5/5 解析到 `…OutlineRegular` |
+| V20 | 动态 client + host | `vitest run --config .script/verify/vitest.verify.config.ts`（真 SlotRegistry/renderer/primitives + 真 host 路由） | ✅ **12/12**（client 7 + host 5） |
+| V21 | 安装与组合 | `dsh --profile web --dump-config` | ✅ `# == dsh-save-button` / `- id: download-button` |
+| V22 | 真机 GUI 装载 | 运行中的 0.2.0-rc.2 GUI：索引 `__DSH_BOOT__.entries` 含 `dsh-save-button`（rev `0061b4fd2b8c`），client bundle `GET` 200 | ✅ |
+| V23 | Host 路由（真机） | `/api/download.button` 无坐标 400、未知坐标 404；对照 `/api/nonexistent` 404 | ✅ |
+
+**0.2.0 结论**：无需第三个适配器，`fileActions017` 全链路 **12/12**，L0 **85/85**。
+
+> 动态 spec 里原有一处过期断言（期望 slot 条目 id 为改名前的 `dsh-download-button`）；本次运行时把它改成
+> `dsh-save-button` 后得到 12/12。工作树 `.script/verify/` 里那份仍是旧值，需同步——与插件本身无关。
+
+### 9.4 临时脚本位置
 
 按 `temporary-scripts-in-dot-script` 约定（`.script/` 已被 `.gitignore`）：
 
@@ -313,6 +347,9 @@ pnpm install && pnpm run build
 | chain slot 渲染 | 自动 frame 只暴露 `renderSlot`，**chain 必须用自定义 root frame 的 `renderSlotChain`** | `renderSlot` 即够（list） |
 | DOM 环境 | 无 `scripts/test-dom-environment.ts`，用 `// @vitest-environment jsdom` | 有该 setup 文件，由配置条件加载 |
 
+0.2.0-rc.\* 的接线与 0.1.7-rc.\* 相同（有 `packages/deliverables/tool-present`、有 `scripts/test-dom-environment.ts`），
+`vitest.verify.config.ts` 据前者存在与否自动选 0.1.7 线 spec，因此换到 0.2.0 后无需改配置。
+
 跑：
 
 ```bash
@@ -330,6 +367,8 @@ DSH_HOME=/tmp/dsh-<版本>-verify/.dsh pnpm dsh --profile web --dump-config | gr
 - 官方对照注册：取 `@deepseek-ai/dsh-client-ui-deliverables@<v>/lib/client.js`，搜
   `slots.inject("conversation.chat.turnTail"`。
 - 本地等价物：`.script/compat/probe-017.mjs`、`.script/compat/probe-icons-matrix.mjs`。
+- 跨 tag 增量核对：`git -C /home/liumenghan/deepseek-harness diff <old-tag> <new-tag> -- <contract paths>`
+  （0.2.0 兼容性检查用它对比 0.1.7-rc.2）。
 
 ## 附：CI 门禁建议
 

@@ -79,6 +79,44 @@ node .script/compat/probe-icons-matrix.mjs  # 全部 RC tag 的图标矩阵（10
 - [ ] 浏览器里实际点一次「下载」，确认字节一致（含中文名/大文件）。
 - [ ] 本文件与 [compatibility.md](compatibility.md) 的版本表、断言数、实测记录已同步更新。
 
+### 5.1 发版流程（tag → CI 发布）
+
+推 `v*` tag 触发 [`.github/workflows/publish.yml`](../.github/workflows/publish.yml) 发布到 npm：
+
+```sh
+# 0. 在 main 上、工作树干净、CI 绿
+git status --short
+
+# 1. 改版本号（唯一真源：package.json "version"）
+#    本次为 0.1.4 -> 0.1.5
+
+# 2. 本地门禁
+npm test                                   # L0 85/85
+node .script/compat/probe-017.mjs
+node .script/compat/probe-icons-matrix.mjs # 覆盖到最新 RC tag
+npm pack --dry-run                         # 核对 files：lib/ + cordis.patch.yml + doc/ + README + LICENSE
+#    兼容性工作树切到 latest/next（当前 0.2.0-rc.2）跑真机规格，见 §2 与 compatibility.md §10
+
+# 3. 提交（文档/功能一条，版本一条也可）
+git add -A && git commit -m "docs: add 0.2.0-rc.* support; release v0.1.5"
+
+# 4. 打带注释的 tag，推 main 与 tag
+git tag -a v0.1.5 -m "chore: release v0.1.5"
+git push origin main
+git push origin v0.1.5
+```
+
+CI 在 tag 上先 `npm test`，再 `npm publish --access public --provenance`。发版后核对：
+
+```sh
+npm view dsh-save-button version            # 应为 0.1.5
+dsh plugin --profile web add dsh-save-button@0.1.5
+dsh --profile web --dump-config | grep download-button
+```
+
+> 仓库 secret `NPM_TOKEN` 需为 granular token（勾选 publish 与 Bypass 2FA）；本地 `npm publish` 也会被
+> `prepublishOnly: npm test` 拦一道。
+
 ## 6. 常见开发陷阱
 
 | 陷阱 | 说明 |
