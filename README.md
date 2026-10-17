@@ -40,7 +40,7 @@ lives on the Host, the browser is in your hands, and the only thing missing is a
 - **Zero dependencies, zero build**: a plain ESM host half plus a hand-written browser bundle — no `postinstall`,
   no compile step.
 - **Bilingual UI**: follows the GUI language (English / 中文).
-- **Works on DSH `0.1.5-rc.*`, `0.1.7-rc.*` and `0.2.0-rc.*`**: see [Supported DSH versions](#supported-dsh-versions).
+- **Works on DSH `0.1.5-rc.*`, `0.1.7-rc.*`, `0.2.0-rc.*` and `0.2.1-rc.*`**: see [Supported DSH versions](#supported-dsh-versions).
 
 ## Install
 
@@ -107,6 +107,7 @@ type checks, and chunked reads all happen in the Host half. See
 | 0.1.5-rc.1 / rc.2 / rc.3 | chain | claims the whole turn row with `priority: -1` and draws the card itself | supported (rc.3 verified 11/11) |
 | 0.1.7-rc.1 / rc.2 | list | official card untouched; injects a Download button into `deliverables.file.actions` | supported (rc.2 verified 12/12) |
 | 0.2.0-rc.1 / rc.2 | list | same as 0.1.7: official card untouched; injects a Download button into `deliverables.file.actions` | supported (rc.2 verified 12/12) |
+| 0.2.1-rc.1 / rc.2 | list | same as 0.1.7: official card untouched; injects a Download button into `deliverables.file.actions` | supported (rc.2 verified 13/13) |
 
 > At init time the plugin picks its adapter from what the runtime **actually declares** — a client plugin cannot
 > read the DSH version — so one installation works on every supported line. The contract list, test layers, itemized

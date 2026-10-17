@@ -16,8 +16,9 @@
 | 0.1.5-rc.1 / rc.2 / rc.3 | chain | `chain015`：`priority: -1` 认领整行，自绘卡片 | **支持**（rc.3 实测 **11/11**） |
 | 0.1.7-rc.1 / rc.2 | list | `fileActions017`：官方卡片原样，注入 `deliverables.file.actions` 下载按钮 | **支持**（rc.2 实测 **12/12**） |
 | 0.2.0-rc.1 / rc.2 | list | `fileActions017`（同 0.1.7）：官方卡片原样，注入 `deliverables.file.actions` 下载按钮 | **支持**（rc.2 实测 **12/12**） |
+| 0.2.1-rc.1 / rc.2 | list | `fileActions017`（同 0.1.7）：官方卡片原样，注入 `deliverables.file.actions` 下载按钮 | **支持**（rc.2 实测 **13/13**） |
 
-- 两条适配器线（0.1.5 的 chain / 0.1.7 起的 list）各有专属适配器，且**各自在真机 registry + 生产渲染器上被验证**（第 9 节 V1–V23）。
+- 两条适配器线（0.1.5 的 chain / 0.1.7 起的 list）各有专属适配器，且**各自在真机 registry + 生产渲染器上被验证**（第 9 节 V1–V30）。
 - 下界是 **0.1.5-rc.1**（见第 4 节 RC-03）。
 - 插件**不修改任何官方文件**；未认领的回合官方渲染原样。
 
@@ -27,9 +28,10 @@
 
 | 通道 | 版本 | 说明 |
 |---|---|---|
-| latest | 0.2.0-rc.2 | stable 通道，必须测 |
-| next | 0.2.0-rc.2 | 下一版通道，必须测 |
-| — | 0.2.0-rc.1 | 0.2.0 线入口 |
+| latest | 0.2.1-rc.2 | stable 通道，必须测 |
+| next | 0.2.1-rc.2 | 下一版通道，必须测 |
+| — | 0.2.1-rc.1 | 0.2.1 线入口 |
+| — | 0.2.0-rc.2 / 0.2.0-rc.1 | 上一版已验线，回归对照 |
 | — | 0.1.5-rc.1 / 0.1.5-rc.2 | 功能基线（rc.2 是早期已验版本） |
 | — | 0.1.7-rc.1 / 0.1.7-rc.2 | 上一版已验线，用于回归对照 |
 | — | 0.1.0-rc.2 / rc.3 / rc.6 / rc.7 / rc.8、0.1.1-rc.1 / rc.2、0.1.2-rc.1 | 下界负例，只测「优雅失败 / 不支持」 |
@@ -53,6 +55,8 @@
 | 0.1.7-rc.2 | ✓ | ✓ | ✓（实测） | ✓（修复后实测） | ✓（渲染级） | **实测通过 12/12**（第 9.1 节） |
 | 0.2.0-rc.1 | ✓ | ✓ | ✓（同 0.1.7 契约） | ✓ | 未实测 | **应通过**（契约同 0.1.7） |
 | 0.2.0-rc.2 | ✓ | ✓ | ✓（实测） | ✓（生产渲染器实测） | ✓（渲染级） | **实测通过 12/12**（第 9.3 节） |
+| 0.2.1-rc.1 | ✓ | ✓ | ✓（同 0.1.7 契约） | ✓ | 未实测 | **应通过**（契约同 0.1.7，见 9.4） |
+| 0.2.1-rc.2 | ✓ | ✓ | ✓（实测） | ✓（生产渲染器实测） | ✓（渲染级 + 绝对路径用例） | **实测通过 13/13**（第 9.4 节） |
 
 ## 3. 契约面清单（插件依赖什么）
 
@@ -72,6 +76,12 @@
 > **0.2.0-rc.\* 增量（实测）**：C1–C10 在 0.1.7-rc.2 → 0.2.0-rc.2 之间无破坏性变化——插件相关源码逐字节相同
 > （`ui-chat` 的 `register-node-renderers.ts` / `contract/slots.ts`、`ui-deliverables` 的 `file-actions.ts` / `Deliverables.tsx`、`ui-slots` src），
 > Host 侧 C1–C5 所在包只有版本号变化，C8 五个图标仍解析到 `…OutlineRegular`（与 0.1.7 同名）。
+>
+> **0.2.1-rc.\* 增量（实测）**：契约面同样无破坏性断点，但有两处需要明说的变化——
+> （a）`@deepseek-ai/dsh-tool-present` 改用 `ctx.workingDirectory.ensure` 取 cwd，并把事件的 `path` 记为 `ctx.fs.processPath(target)`
+> （**绝对路径**，不再是用户传入的相对路径）；`workspaceFiles.stat` 声明接受绝对路径，插件按 `(sessionId,seq,index)` 定位、再以 `stat.absolutePath` 读取，因此兼容。
+> （b）`@deepseek-ai/dsh-client-connection` 的 `createSharedFetchHandler().fetch(request, peer)` 对 exact route 新增 `peer.principal.kind === 'owner'` 校验：
+> 真机上浏览器就是 owner，插件路由不受影响；只有测试桩需要补传 owner peer。
 
 **按线核对过的事实**
 
@@ -131,6 +141,23 @@ const IconDownload = primitives.IconDownloadOutline16 ?? primitives.IconDownload
 `deliverables.file.actions` 仍是 list 子槽且 owner 仍带 `actionUrl`，五个图标仍是权重后缀名。因此 0.2.0 直接沿用
 `fileActions017`，不需要第三个适配器。`LinkIcon` 自 0.1.7 起只有 `LinkIconRegular` / `LinkIconMedium` 两个导出，
 但它只出现在永不选中的 `chain015` 路径里，不构成 0.2.0 的问题。
+
+### 0.2.1：无新断点，但两处行为需要显式兼容
+
+0.2.0-rc.2 → 0.2.1-rc.2 跨度较大（8431 个文件变更），但插件依赖的契约点逐一核对如下：
+
+- `contract/slots.ts`：`turnTail` 仍声明为 `{ kind: 'list'; scope: 'session'; owner: TurnTailOwnerProps }`，
+  `TurnTailOwnerProps`（`turn` / `seq` / `openFile`）**逐字节相同**；`deliverables.file.actions` 的 `file-actions.ts` **未改**。
+- `ui-slots`：`SlotEntryDef` 新增可选 `inline?: true`，`renderer.ts` 的 `KeyedStandardSource` 允许第二参数——都是加法，
+  不影响插件注册的 `{ name, id, locale }` list 条目。
+- `ui-primitives`：图标面新增 `PermissionIconAutoReview*`、`InlineEditor`、`HoverCardGroup`、`CommandText`；
+  五个 `Icon*OutlineRegular` 仍在（L1 矩阵实测）。`user-text.tsx` 的 `projectUserText` 被 `UserTextRun` 取代，但插件从未用到它。
+- `tool-present`：`ctx.workingDirectory.ensure` + `path: ctx.fs.processPath(target)`（绝对路径）。插件以坐标定位、
+  `workspaceFiles.stat` 接受绝对路径，故兼容；新增的 host 用例专门覆盖这条绝对路径（见 9.4 V27）。
+- `client-connection`：exact route 分发新增 owner 校验（见第 3 节注），真机路由不受影响。
+- `workspace-files`：`WorkspaceFiles.stat` 签名与语义不变，只在 lookup 注册里加了 `resource: 'session'`。
+
+结论：0.2.1 继续沿用 `fileActions017`，不需要第三个适配器。
 
 ## 5. 测试分层
 
@@ -305,7 +332,31 @@ node "$DSH_BIN" --profile web --dump-config | tail -5
 > 动态 spec 里原有一处过期断言（期望 slot 条目 id 为改名前的 `dsh-download-button`）；本次运行时把它改成
 > `dsh-save-button` 后得到 12/12。工作树 `.script/verify/` 里那份仍是旧值，需同步——与插件本身无关。
 
-### 9.4 临时脚本位置
+### 9.4 0.2.1-rc.1 / rc.2（tag `dsh-v0.2.1-rc.2` = `687f282e86`，即当前 latest/next）
+
+被测对象：`lib/client.js` / `lib/index.js` 当前实现。被测 DSH：主检出 `/home/liumenghan/deepseek-harness`
+（`git checkout dsh-v0.2.1-rc.2` + 清理幽灵目录 + `pnpm install` + `pnpm run build`；build 9/9 gate 通过、331 client artifacts）。
+动态规格：把 0.1.7 线 `.script/verify/` 拷入主检出，按 0.2.1 接线补差后运行。
+
+| # | 验证项 | 手段 | 结果 |
+|---|---|---|---|
+| V24 | 契约增量 | `git diff dsh-v0.2.0-rc.2 dsh-v0.2.1-rc.2 -- packages/client/ui-chat packages/client/ui-deliverables packages/client/ui-slots packages/client/ui-primitives packages/deliverables packages/session-query packages/api/workspace-files packages/fs` | ✅ `turnTail` 仍 list、`TurnTailOwnerProps` 逐字节相同、`file-actions.ts` 未改；其余变化为加法或与本插件无关 |
+| V25 | `present` 路径语义 | 核对 `tool-present/src/index.ts`：改用 `ctx.workingDirectory.ensure`，事件 `path = ctx.fs.processPath(target)`（绝对路径） | ✅ `WorkspaceFiles.stat` 接受绝对路径（源码注释 + 新增 host 用例实测） |
+| V26 | 图标面 | `.script/compat/probe-icons-matrix.mjs dsh-v0.1.5-rc.3 dsh-v0.2.1-rc.1 dsh-v0.2.1-rc.2` | ✅ 0.2.1 两 tag 均 5/5 解析到 `…OutlineRegular`；0.1.5 仍命中 term 1 |
+| V27 | 动态 client + host | `vitest run --config .script/verify/vitest.verify.config.ts`（真 SlotRegistry/renderer/primitives + 真 host 路由） | ✅ **13/13**（client 7 + host 6，含新增「绝对路径」用例） |
+| V28 | 安装与组合 | `DSH_HOME=/tmp/dsh-compat-021/.dsh dsh plugin --profile web021 add <插件>` + `--dump-config` | ✅ `# == dsh-save-button` / `- id: download-button` |
+| V29 | 真机 GUI 装载 | 隔离 home 启动 0.2.1 GUI（`:3099`）：索引含 `dsh-save-button/client.js&rev=0061b4fd2b8c`；client bundle `GET` 200（36 856 B，含 `deliverables.file.actions`） | ✅ |
+| V30 | Host 路由（真机） | 同一 GUI：`/api/download.button` 无坐标 400、未知坐标 404、未认证 401；对照 `/api/nonexistent` 404、`/api/present.open` 无坐标 400 | ✅ |
+
+**0.2.1 结论**：无新断点，`fileActions017` 全链路 **13/13**，L0 **85/85**，真机 GUI 装载与 host 路由通过。
+
+> 为在 0.2.1 上跑通同一套动态规格，工作树侧需要两处「按线补差」（与插件本身无关）：
+> 1. `vitest.verify.config.ts` 的 setupFiles 里 `scripts/test-invariants.ts` 在 0.2.1 已被删除 → 改为 `existsSync` 条件加载；
+> 2. `plugin-route.host.spec.ts` 的 `createSharedFetchHandler().fetch` 需补传 owner peer
+>    `{ principal: { kind: 'owner' } }`（0.2.1 起 exact route 校验 principal），并新增「绝对路径 presented」用例。
+> 过期 slot id 断言（`dsh-download-button` → `dsh-save-button`）也在本次一并同步。
+
+### 9.5 临时脚本位置
 
 按 `temporary-scripts-in-dot-script` 约定（`.script/` 已被 `.gitignore`）：
 
@@ -349,6 +400,9 @@ pnpm install && pnpm run build
 
 0.2.0-rc.\* 的接线与 0.1.7-rc.\* 相同（有 `packages/deliverables/tool-present`、有 `scripts/test-dom-environment.ts`），
 `vitest.verify.config.ts` 据前者存在与否自动选 0.1.7 线 spec，因此换到 0.2.0 后无需改配置。
+
+0.2.1-rc.\* 还要多补两处接线：setupFiles 里去掉已被删除的 `scripts/test-invariants.ts`；
+host spec 调 shared-fetch handler 时要传 owner peer（`{ principal: { kind: 'owner' } }`）。细节见 9.4 末注。
 
 跑：
 
