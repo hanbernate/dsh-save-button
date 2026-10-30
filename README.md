@@ -107,7 +107,7 @@ type checks, and chunked reads all happen in the Host half. See
 | 0.1.5-rc.1 / rc.2 / rc.3 | chain | claims the whole turn row with `priority: -1` and draws the card itself | supported (rc.3 verified 11/11) |
 | 0.1.7-rc.1 / rc.2 | list | official card untouched; injects a Download button into `deliverables.file.actions` | supported (rc.2 verified 12/12) |
 | 0.2.0-rc.1 / rc.2 | list | same as 0.1.7: official card untouched; injects a Download button into `deliverables.file.actions` | supported (rc.2 verified 12/12) |
-| 0.2.1-rc.1 / rc.2 | list | same as 0.1.7: official card untouched; injects a Download button into `deliverables.file.actions` | supported (rc.2 verified 13/13) |
+| 0.2.1-rc.1 … rc.5 | list | same as 0.1.7: official card untouched; injects a Download button into `deliverables.file.actions` | supported (rc.2 / rc.5 verified 13/13) |
 
 > At init time the plugin picks its adapter from what the runtime **actually declares** — a client plugin cannot
 > read the DSH version — so one installation works on every supported line. The contract list, test layers, itemized
@@ -139,7 +139,7 @@ The detailed docs under `doc/` are currently written in Chinese:
 | Document | Contents |
 |---|---|
 | [doc/architecture.md](doc/architecture.md) | how a download works end to end, the two halves, the adapter + capability-probe selector, the icon capability table, security boundary, design decision records |
-| [doc/compatibility.md](doc/compatibility.md) | support matrix, official contract list (C1–C10), history of the two breaking points, test layers and cases, real-machine verification records (V1–V23), tag-switching handbook |
+| [doc/compatibility.md](doc/compatibility.md) | support matrix, official contract list (C1–C10), history of the two breaking points, test layers and cases, real-machine verification records (V1–V37), tag-switching handbook |
 | [doc/development.md](doc/development.md) | directory layout, running tests, how edits take effect, steps for adding an adapter, pre-release checklist, development pitfalls |
 
 ## License

@@ -16,9 +16,9 @@
 | 0.1.5-rc.1 / rc.2 / rc.3 | chain | `chain015`：`priority: -1` 认领整行，自绘卡片 | **支持**（rc.3 实测 **11/11**） |
 | 0.1.7-rc.1 / rc.2 | list | `fileActions017`：官方卡片原样，注入 `deliverables.file.actions` 下载按钮 | **支持**（rc.2 实测 **12/12**） |
 | 0.2.0-rc.1 / rc.2 | list | `fileActions017`（同 0.1.7）：官方卡片原样，注入 `deliverables.file.actions` 下载按钮 | **支持**（rc.2 实测 **12/12**） |
-| 0.2.1-rc.1 / rc.2 | list | `fileActions017`（同 0.1.7）：官方卡片原样，注入 `deliverables.file.actions` 下载按钮 | **支持**（rc.2 实测 **13/13**） |
+| 0.2.1-rc.1 … rc.5 | list | `fileActions017`（同 0.1.7）：官方卡片原样，注入 `deliverables.file.actions` 下载按钮 | **支持**（rc.2 / rc.5 实测 **13/13**） |
 
-- 两条适配器线（0.1.5 的 chain / 0.1.7 起的 list）各有专属适配器，且**各自在真机 registry + 生产渲染器上被验证**（第 9 节 V1–V30）。
+- 两条适配器线（0.1.5 的 chain / 0.1.7 起的 list）各有专属适配器，且**各自在真机 registry + 生产渲染器上被验证**（第 9 节 V1–V37）。
 - 下界是 **0.1.5-rc.1**（见第 4 节 RC-03）。
 - 插件**不修改任何官方文件**；未认领的回合官方渲染原样。
 
@@ -28,9 +28,10 @@
 
 | 通道 | 版本 | 说明 |
 |---|---|---|
-| latest | 0.2.1-rc.2 | stable 通道，必须测 |
-| next | 0.2.1-rc.2 | 下一版通道，必须测 |
-| — | 0.2.1-rc.1 | 0.2.1 线入口 |
+| latest | 0.2.1-rc.5 | stable 通道，必须测 |
+| next | 0.2.1-rc.5 | 下一版通道，必须测 |
+| — | 0.2.1-rc.3 / rc.4 | 0.2.1 线中继版本，契约同 rc.5（图标矩阵实测） |
+| — | 0.2.1-rc.1 / rc.2 | 0.2.1 线入口（rc.2 已验线） |
 | — | 0.2.0-rc.2 / 0.2.0-rc.1 | 上一版已验线，回归对照 |
 | — | 0.1.5-rc.1 / 0.1.5-rc.2 | 功能基线（rc.2 是早期已验版本） |
 | — | 0.1.7-rc.1 / 0.1.7-rc.2 | 上一版已验线，用于回归对照 |
@@ -57,6 +58,8 @@
 | 0.2.0-rc.2 | ✓ | ✓ | ✓（实测） | ✓（生产渲染器实测） | ✓（渲染级） | **实测通过 12/12**（第 9.3 节） |
 | 0.2.1-rc.1 | ✓ | ✓ | ✓（同 0.1.7 契约） | ✓ | 未实测 | **应通过**（契约同 0.1.7，见 9.4） |
 | 0.2.1-rc.2 | ✓ | ✓ | ✓（实测） | ✓（生产渲染器实测） | ✓（渲染级 + 绝对路径用例） | **实测通过 13/13**（第 9.4 节） |
+| 0.2.1-rc.3 / rc.4 | ✓ | ✓ | ✓（同 rc.5 契约） | ✓ | 未实测 | **应通过**（图标矩阵实测，见 9.6） |
+| 0.2.1-rc.5 | ✓ | ✓ | ✓（实测） | ✓（生产渲染器实测） | ✓（渲染级 + 绝对路径用例） | **实测通过 13/13**（第 9.6 节） |
 
 ## 3. 契约面清单（插件依赖什么）
 
@@ -163,18 +166,18 @@ const IconDownload = primitives.IconDownloadOutline16 ?? primitives.IconDownload
 
 ### L0 — 静态与单元（与版本无关，先在主分支跑绿）
 
-主流程测试 + 每个适配器一个测试类，共 **85 条断言**：
+主流程测试 + 每个适配器一个测试类，共 **92 条断言**：
 
 | 文件 | 覆盖 |
 |---|---|
 | `test/package.test.mjs` | 清单、patch、bundle 只 require 基线模块 |
 | `test/download.test.mjs` | 坐标校验、头部安全、失败分类、分块流 |
 | `test/host.test.mjs` | 路由端到端 +「不接受 path」不变量 |
-| `test/client.test.mjs` | **主流程，走最新 RC 适配器（0.1.7 的 `fileActions017`）**：envelope、apply 选择、`select` 规则、坐标、按钮与下载手势 |
+| `test/client.test.mjs` | **主流程，走最新 RC 适配器（0.1.7 的 `fileActions017`）**：envelope、apply 选择、`select` 规则、坐标、按钮与下载手势；部署基线（域名根 / 反代前缀 / hash 路由下从 `document.baseURI` 推导 API 前缀） |
 | `test/adapter-file-actions-017.test.mjs` | 0.1.7-rc.* 适配器专属：子 slot 注册（`id`/`locale`、无 `select`）、坐标来源、按钮与失败路径 |
 | `test/adapter-chain-015.test.mjs` | 0.1.5-rc.* 适配器专属：chain 认领（`priority: -1` + `select`）、整行卡片、chips、折叠 |
 | `test/select-adapter.test.mjs` | 选择器与图标解析：声明树探测（root/子/深层/缺失）、适配器优先级、三代图标名与「后缀不统一」守卫 |
-| `test/client-harness.mjs` | 共享桩（非测试文件）：bundle 装载、两代 primitives、声明树构造、树遍历与文案 |
+| `test/client-harness.mjs` | 共享桩（非测试文件）：bundle 装载（materialize 时注入 `document.baseURI`）、两代 primitives、声明树构造、树遍历与文案 |
 
 > L0 用的是**自造桩**：桩件级通过不代表跨版本装载/渲染通过，那以 L1/L2 为准。
 
@@ -233,7 +236,7 @@ const IconDownload = primitives.IconDownloadOutline16 ?? primitives.IconDownload
 
 | ID | 层 | 前置 | 步骤/断言 | 适用版本 | 期望 | 自动化 |
 |---|---|---|---|---|---|---|
-| T-01 | L0 | — | `npm test` | 全部 | **85 断言全绿** | ✅ |
+| T-01 | L0 | — | `npm test` | 全部 | **92 断言全绿** | ✅ |
 | T-10 | L1 | registry | `turnTail` 的 `kind` 与目标版本一致 | 全部 | 记录实际值 | ✅ |
 | T-11 | L1 | registry | 5 个图标符号存在性 | 全部 | 0.1.5-rc.* 旧名；0.1.7-rc.* 新名 | ✅ |
 | T-12 | L1 | registry | C1–C5 形状断言 | 全部 | 通过 | ✅ |
@@ -365,6 +368,29 @@ node "$DSH_BIN" --profile web --dump-config | tail -5
   `packages/deliverables/tool-present` 是否存在判定，并条件性加载只在该线存在的 `test-dom-environment.ts`）。
 - 插件侧 `.script/compat/`：`probe-017.mjs`、`probe-icons-matrix.mjs`、`icon-chains.mjs`
   （两个探针共享的图标链读取器——直接读 `lib/client.js` 的 `ICON_GENERATIONS`，避免各抄一份而失真）。
+
+### 9.6 0.2.1-rc.3 / rc.4 / rc.5（tag `dsh-v0.2.1-rc.5` = `b830ec950f`，即当前 latest/next）
+
+被测对象：`lib/client.js` / `lib/index.js` 当前实现——**含 PR #1 之后的浏览器半区**（API 前缀在 bundle
+装载时从 `document.baseURI` 推导；根部署下 `API_BASE` 为空串，路由与历史版本逐字节一致）。被测 DSH：兼容性
+专用工作树 `/home/liumenghan/deepseek-harness-test`（`git checkout dsh-v0.2.1-rc.5` + `pnpm install`
++ `pnpm run build`）。
+
+| # | 验证项 | 手段 | 结果 |
+|---|---|---|---|
+| V31 | 契约增量 | `git diff dsh-v0.2.1-rc.2 dsh-v0.2.1-rc.5`（契约路径同 V24，剔除测试与 package.json） | ✅ 无断点：`turnTail` 未改；`file-actions.ts` / `ui-slots` / `ui-deliverables` / `deliverables` / `session-query` / `workspace-files` / `fs` 源码不动；`slots.ts` 只动 reasoning 槽（本插件不用）；`Menu.tsx` 只加可选 prop（`current` / `minWidthFromAnchor`）；图标只加法 |
+| V32 | 图标面 | `.script/compat/probe-icons-matrix.mjs dsh-v0.1.5-rc.3 dsh-v0.2.1-rc.{2,3,4,5}` | ✅ rc.2–rc.5 均 5/5 解析到 `…OutlineRegular`（term 2）；0.1.5 仍命中 term 1（后加 term 为 no-op 的守卫） |
+| V33 | L0 | `npm test`（Node 24，`node --test`） | ✅ **92/92**（新增根 / 反代前缀 / hash 路由三种 `document.baseURI` 下的部署基线，download / present.open / present.host 三条路由全覆盖） |
+| V34 | 动态 client + host | `vitest run --config .script/verify/vitest.verify.config.ts`（真 SlotRegistry/renderer/primitives + 真 host 路由；host spec 本次补入 9.4 的「绝对路径 presented」用例） | ✅ **13/13**（client 7 + host 6） |
+| V35 | 安装与组合 | `DSH_HOME=/tmp/dsh-021rc5-verify/.dsh dsh plugin --profile web add <插件>` + `--dump-config` | ✅ `# == dsh-save-button` / `- id: download-button` |
+| V36 | 真机 GUI 装载 | 隔离 home 启动 0.2.1-rc.5 GUI（`:3099`）：`__DSH_BOOT__.entries` 含 `dsh-save-button/client.js&rev=806bddc062e5`；client bundle `GET` 200（36 980 B，含 `deliverables.file.actions` 与 `document.baseURI` 前缀代码） | ✅ |
+| V37 | Host 路由（真机） | 同一 GUI：`/api/download.button` 无坐标 400、未知坐标 404、未认证 401；对照 `/api/nonexistent` 404、`/api/present.open` 无坐标 400 | ✅ |
+
+**0.2.1-rc.3/4/5 结论**：无新断点，`fileActions017` 全链路 **13/13**，L0 **92/92**，真机 GUI 装载与 host 路由通过；
+rc.3 / rc.4 未逐层实测，但契约面与 rc.5 同源（V31）且图标矩阵实测（V32），按「契约同 rc.5」判定**应通过**。
+
+> 真机 index 带 `<base href="./">`——这正是 PR #1 前缀推导的输入形态：根部署下 `document.baseURI` 的目录是
+> `/`，`API_BASE` 为空串，路由不变（V34 的 jsdom 环境同为根基线）；反代前缀与 hash 路由场景由 L0 用例覆盖。
 
 ## 10. 换线操作手册
 
