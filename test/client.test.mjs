@@ -5,16 +5,23 @@
  * additive per-file action list — so the flow is validated against the contract the
  * plugin targets first. Contract-specific behaviour of the older 0.1.5-rc.* chain
  * adapter lives in adapter-chain-015.test.mjs, and the per-adapter registration details
- * in adapter-file-actions-017.test.mjs.
+ * in adapter-file-actions-017.test.mjs. The deployment-base cases materialize their
+ * own clients, because the API prefix is captured when the bundle loads.
  */
 import assert from 'node:assert/strict'
 import { after, before, describe, it } from 'node:test'
 import {
+  ROOT_BASE,
   bundle,
   client017,
   contextFor,
   declarations017,
+  elementsOf,
+  flushEffects,
   installDoubles,
+  materialize,
+  pendingEffects,
+  primitives017,
   translate,
 } from './client-harness.mjs'
 
@@ -180,5 +187,115 @@ describe('the 0.1.7-rc.* download action', () => {
     doubles.state.respond = () => ({ ok: true, status: 200, json: () => Promise.resolve({}) })
     assert.deepEqual(doubles.fetches, [['/api/download.button?sessionId=s9&seq=12&index=3', 'HEAD']])
     assert.equal(doubles.documentStub.anchors.length, 0, 'a refused pre-check must not start a download')
+  })
+})
+
+describe('the deployment base the bundle derives at load', () => {
+  /** One claimed row with a single delivery, the shape the 0.1.5-rc.* adapter owns. */
+  const rowOf = owner => owner.DeliveryRow({
+    matched: {
+      produced: [],
+      presented: [{ path: 'dist/HexHowitzer-windows-x86_64.zip', description: 'release', seq: 7, index: 0 }],
+    },
+    openFile: () => {},
+    sessionId: 'session-1',
+    t: translate,
+  })
+
+  /** The card's menu node; its `onSelect` is the official file-action seat. */
+  const menuOf = tree => elementsOf(tree, 'Menu')[0]
+
+  describe('at the domain root', () => {
+    const owner = materialize(primitives017, ROOT_BASE)
+    let doubles
+
+    before(() => { doubles = installDoubles() })
+    after(() => { doubles.restore() })
+
+    it('probes the host desktop through the root-absolute route', () => {
+      doubles.fetches.length = 0
+      pendingEffects.length = 0
+      rowOf(owner)
+      flushEffects()
+      assert.deepEqual(doubles.fetches, [['/api/present.host', 'GET']])
+    })
+
+    it('downloads through the root-absolute route', async () => {
+      doubles.fetches.length = 0
+      doubles.documentStub.anchors.length = 0
+      const tree = rowOf(owner)
+      const download = elementsOf(tree, 'button').find(node => node.props.className === 'ddb-download')
+      download.props.onClick()
+      await new Promise(resolve => { setTimeout(resolve, 0) })
+      assert.deepEqual(doubles.fetches, [['/api/download.button?sessionId=session-1&seq=7&index=0', 'HEAD']])
+      assert.equal(doubles.documentStub.anchors[0].href, '/api/download.button?sessionId=session-1&seq=7&index=0')
+    })
+
+    it('opens and reveals through the root-absolute official routes', async () => {
+      doubles.fetches.length = 0
+      const menu = menuOf(rowOf(owner))
+      menu.props.onSelect('open')
+      menu.props.onSelect('reveal')
+      await new Promise(resolve => { setTimeout(resolve, 0) })
+      assert.deepEqual(doubles.fetches, [
+        ['/api/present.open?sessionId=session-1&seq=7&index=0', 'POST'],
+        ['/api/present.open?sessionId=session-1&seq=7&index=0&action=reveal', 'POST'],
+      ])
+    })
+  })
+
+  describe('behind a reverse-proxy prefix', () => {
+    const owner = materialize(primitives017, 'http://host.example/bi/bi-dsh/')
+    let doubles
+
+    before(() => { doubles = installDoubles() })
+    after(() => { doubles.restore() })
+
+    it('probes the host desktop through the prefixed route', () => {
+      doubles.fetches.length = 0
+      pendingEffects.length = 0
+      rowOf(owner)
+      flushEffects()
+      assert.deepEqual(doubles.fetches, [['/bi/bi-dsh/api/present.host', 'GET']])
+    })
+
+    it('downloads through the prefixed route, still addressed by coordinates', async () => {
+      doubles.fetches.length = 0
+      doubles.documentStub.anchors.length = 0
+      const tree = rowOf(owner)
+      const download = elementsOf(tree, 'button').find(node => node.props.className === 'ddb-download')
+      download.props.onClick()
+      await new Promise(resolve => { setTimeout(resolve, 0) })
+      assert.deepEqual(doubles.fetches, [['/bi/bi-dsh/api/download.button?sessionId=session-1&seq=7&index=0', 'HEAD']])
+      assert.equal(
+        doubles.documentStub.anchors[0].href,
+        '/bi/bi-dsh/api/download.button?sessionId=session-1&seq=7&index=0',
+        'the anchor streams from the same prefixed route',
+      )
+    })
+
+    it('opens and reveals through the prefixed official routes', async () => {
+      doubles.fetches.length = 0
+      const menu = menuOf(rowOf(owner))
+      menu.props.onSelect('open')
+      menu.props.onSelect('reveal')
+      await new Promise(resolve => { setTimeout(resolve, 0) })
+      assert.deepEqual(doubles.fetches, [
+        ['/bi/bi-dsh/api/present.open?sessionId=session-1&seq=7&index=0', 'POST'],
+        ['/bi/bi-dsh/api/present.open?sessionId=session-1&seq=7&index=0&action=reveal', 'POST'],
+      ])
+    })
+
+    it('keeps the prefix when the page carries a hash route', async () => {
+      const hashed = materialize(primitives017, 'http://host.example/bi/bi-dsh/#/chat/turn-3')
+      doubles.fetches.length = 0
+      const button = hashed.ActionDownload({
+        actionUrl: 'api/present.open?sessionId=s9&seq=12&index=3',
+        t: translate,
+      })
+      button.props.onClick()
+      await new Promise(resolve => { setTimeout(resolve, 0) })
+      assert.deepEqual(doubles.fetches, [['/bi/bi-dsh/api/download.button?sessionId=s9&seq=12&index=3', 'HEAD']])
+    })
   })
 })

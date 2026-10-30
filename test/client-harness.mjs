@@ -5,11 +5,18 @@
  * materialized against a chosen ui-primitives surface — so each adapter test can describe
  * one DSH RC line (its exports, its slot declarations) without a browser.
  */
+/**
+ * The deployment base the historical tests assume: the domain root, where the bundle
+ * derives an empty API base and every route stays `/api/...`.
+ */
+export const ROOT_BASE = 'http://127.0.0.1:3080/'
+
 /** Element factories the component reaches for, recording what a test can assert. */
-export function createDocumentStub() {
+export function createDocumentStub(baseURI = ROOT_BASE) {
   const anchors = []
   const appendedStyles = []
   const document = {
+    baseURI,
     head: { appendChild: element => appendedStyles.push(element) },
     body: { appendChild: element => { if (element.tag === 'a') anchors.push(element) } },
     getElementById: () => null,
@@ -39,8 +46,20 @@ export const reactStub = {
   }),
   Fragment: Symbol.for('react.fragment'),
   useState: initial => [typeof initial === 'function' ? initial() : initial, () => {}],
-  useEffect: () => {},
+  useEffect: effect => { pendingEffects.push(effect) },
   useRef: value => ({ current: value }),
+}
+
+/**
+ * Effects the inert `useEffect` collected instead of running — the browser would
+ * commit them after render, so a test that needs one (the row's host probe) runs it
+ * explicitly through `flushEffects`.
+ */
+export const pendingEffects = []
+
+/** Run every effect collected since the last flush, in collection order. */
+export function flushEffects() {
+  for (const effect of pendingEffects.splice(0)) effect()
 }
 
 /** Symbolic stand-ins for the primitives every RC line exports. */
@@ -95,15 +114,28 @@ export const bundle = loaded[0]
 
 /**
  * Materialize the client half against one primitives build.
+ *
+ * `API_BASE` is captured while the factory runs — the browser-half equivalent of the
+ * bundle loading into a page — so the base URI under test is installed for exactly
+ * that moment and restored afterwards, the way a page's document is fixed at load.
  * @param primitives - the ui-primitives surface to inject.
+ * @param baseURI - the document base the bundle derives its API prefix from.
  * @returns the plugin module's exports.
  */
-export function materialize(primitives = primitives017) {
-  return bundle.factory(specifier => {
-    if (specifier === 'react') return reactStub
-    if (specifier === '@deepseek-ai/dsh-client-ui-primitives') return primitives
-    throw new Error(`unexpected module request: ${specifier}`)
-  })
+export function materialize(primitives = primitives017, baseURI = ROOT_BASE) {
+  const hadDocument = 'document' in globalThis
+  const previous = globalThis.document
+  globalThis.document = { baseURI }
+  try {
+    return bundle.factory(specifier => {
+      if (specifier === 'react') return reactStub
+      if (specifier === '@deepseek-ai/dsh-client-ui-primitives') return primitives
+      throw new Error(`unexpected module request: ${specifier}`)
+    })
+  } finally {
+    if (hadDocument) globalThis.document = previous
+    else delete globalThis.document
+  }
 }
 
 /** The 0.1.7-rc.* materialization this plugin targets first. */
